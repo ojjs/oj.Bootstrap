@@ -1,9 +1,9 @@
 {
   "name": "oj-bootstrap",
   "version": "0.0.1",
-  "main": "src/oj.Bootstrap.js",
+  "main": "oj.Bootstrap.js",
   "description": "Twitter Bootstrap plugin for OJ",
-  "homepage": "http://ojjs.org/docs#Bootstrap",
+  "homepage": "http://ojjs.org/",
   "keywords": [
     "oj",
     "plugin",

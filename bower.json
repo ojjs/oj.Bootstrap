@@ -1,0 +1,25 @@
+{
+  "name": "oj-bootstrap",
+  "version": "0.0.1",
+  "main": "oj.Bootstrap.js",
+  "homepage": "http://ojjs.org/",
+  "authors": [
+    "Evan Moran <evan@evanmoran.com>"
+  ],
+  "description": "Twitter Bootstrap plugin for OJ",
+  "keywords": [
+    "oj",
+    "plugin",
+    "bootstrap",
+    "twitter"
+  ],
+  "license": "MIT",
+  "ignore": [
+    ".DS_Store",
+    ".git",
+    ".gitignore",
+    "bower_components",
+    "package.json",
+    "node_modules"
+  ]
+}
