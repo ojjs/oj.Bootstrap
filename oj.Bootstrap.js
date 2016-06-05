@@ -16,8 +16,8 @@
     if (typeof settings !== 'object') settings = {};
 
     var _extend = oj.$.extend,
-      bsSizes = ['lg', 'md', 'sm', 'xs'],
-      bsClassMap = {lg:'col-lg', md:'col-md', sm:'col-sm', xs:'col-xs',
+      bsGridSizes = ['lg', 'md', 'sm', 'xs'],
+      bsGridClassMap = {lg:'col-lg', md:'col-md', sm:'col-sm', xs:'col-xs',
         lgOffset:'col-lg-offset', mdOffset:'col-md-offset',
         smOffset:'col-sm-offset', xsOffset:'col-xs-offset'},
       BS = {};
@@ -29,19 +29,7 @@
     function bsLead(){return _callWithClasses(this, oj.div, ['lead'], arguments)}
 
     function bsRow(){return _callWithClasses(this, oj.div, ['row'], arguments)}
-
-    function bsCol(){
-      var u = oj.unionArguments(arguments), args = u.args, options = u.options,
-      classes = []
-      for(var option in options) {
-        // Convert options prefixed with keys in bsSizes
-        if(bsClassMap[option]) {
-          classes.push(bsClassMap[option] + '-' + options[option])
-          delete options[option]
-        }
-      }
-      return _callWith(this, oj.div, args, options, classes)
-    }
+    function bsCol(){return _callWithClasses(this, oj.div, [], arguments)}
 
     // <div class="clearfix visible-xs"></div>
     // clearfix({visible:'xs'})
@@ -70,6 +58,7 @@
         if(size) classes.push('fa-' + size)
         if(rotate) classes.push('fa-rotate-' + rotate)
         if(flip) classes.push('fa-flip-' + flip)
+
       return _callWithClasses(this, oj.i, classes, [options].concat(args))
     }
 
@@ -103,22 +92,52 @@
     // <div class="btn-group">...</div>
     function bsButtonGroup(){return _callWithClasses(this, oj.div, ['btn-group'], arguments)}
 
+    // <form role="form">...</form>
+    var formTag = oj.form
+    function bsForm(){return _callWith(this, formTag, arguments, {role:'form'}, [])}
+
+  // <form role="form" class="form-inline">...</form>
+    function bsFormInline(){return _callWith(this, formTag, arguments, {role:'form'}, ['form-inline'])}
+
+    // <form role="form" class="form-horizontal">...</form>
+    function bsFormHorizontal(){return _callWith(this, formTag, arguments, {role:'form'}, ['form-horizontal'])}
+
+    // <div class="form-group">...</div>
+    function bsFormGroup(){return _callWithClasses(this, oj.div, ['form-group'], arguments)}
+
+    // <p class="help-block">...</p>
+    function bsFormHelp(){return _callWithClasses(this, oj.p, ['help-block'], arguments)}
+
     // <div class="btn-toolbar" role="toolbar">...</div>
-    // function bsButtonToolbar(){return _callWithAttributes(this, oj.div, {classes:['btn-group'], role:'toolbar'}, arguments)}
+    function bsButtonToolbar(){return _callWith(this, oj.div, arguments, {role:'toolbar'}, ['btn-toolbar'])}
 
     // <button btn btn-default btn-lg></button>
-    // TODO: btn-lg  ({size:'lg'})
     var buttonTag = oj.button;
     function bsButton(){
       var u = oj.unionArguments(arguments), args = u.args, options = u.options,
-        glyphName = oj.argumentShift(options, 'glyph'),
-        classes = [];
+        glyph = oj.argumentShift(options, 'glyph'),
+        icon = oj.argumentShift(options, 'icon'),
+        iconSize = oj.argumentShift(options, 'iconSize'),
+        iconSpin = oj.argumentShift(options, 'iconSpin'),
+        iconFlip = oj.argumentShift(options, 'iconFlip'),
+        iconInverse = oj.argumentShift(options, 'iconInverse'),
+        size = oj.argumentShift(options, 'size'),
+        emphasis = oj.argumentShift(options, 'emphasis'),
+        block = oj.argumentShift(options, 'block'),
+        classes = ['btn']
+        if (emphasis) classes.push('btn-' + emphasis)
+        if (size) classes.push('btn-' + size)
+        if (block) classes.push('btn-' + block)
       // Add glyph if option was set
-      insertGlyph = (!glyphName ? [_pass] : [function(){
-        bsGlyph(glyphName)
-      },' ']);
-      return _callWithEmphasis(this, buttonTag, 'btn', 'default', insertGlyph.concat(options).concat(args))
+
+      insertGlyph = (!glyph ? [_pass] : [function(){bsGlyph(glyph)}, ' ']);
+      insertIcon = (!icon ? [_pass] : [function(){faIcon(icon, {size:iconSize, spin:iconSpin, flip:iconFlip, inverse:iconInverse})}, ' ']);
+      insert = insertGlyph
+      if(icon)
+        insert = insertIcon
+      return _callWith(this, buttonTag, args.concat(insert), options, classes)
     }
+    bsButton.tag = buttonTag
 
     // Get an elements classes as an Array
     function _getClasses($el){
@@ -149,21 +168,59 @@
       }
     }
 
+    // Remove all classes in arr
+    function _removeClasses($el, arr){
+      for (var ix = 0; ix < arr.length; ix++)
+        $el.removeClass(arr[ix])
+    }
+
     var Button = oj.createType('Button', {
       base: oj.Button,
       constructor: function(){
         var u = oj.unionArguments(arguments), args = u.args, options = u.options,
           emphasis = oj.argumentShift(options, 'emphasis'),
-          glyph = oj.argumentShift(options, 'glyph');
+          glyph = oj.argumentShift(options, 'glyph'),
+          size = oj.argumentShift(options, 'size'),
+          block = oj.argumentShift(options, 'block')
+
+        this.icon = oj.argumentShift(options, 'icon')
+        this.iconSize = oj.argumentShift(options, 'iconSize')
+        this.iconRotate = oj.argumentShift(options, 'iconRotate')
+        this.iconSpin = oj.argumentShift(options, 'iconSpin')
+        this.iconFlip = oj.argumentShift(options, 'iconFlip')
+        this.iconInverse = oj.argumentShift(options, 'iconInverse')
+
+        if (emphasis) _addClassOption(options, 'btn-' + emphasis)
+        if (size) _addClassOption(options, 'btn-' + size)
+        if (block) _addClassOption(options, 'btn-' + block)
+
         Button.base.constructor.apply(this, [options].concat(args));
+
         this.addClass('btn')
         this.emphasis = emphasis || 'default';
         this.glyph = glyph;
+        this.size = size;
+
+        this._remakeIcon();
       },
       properties: {
         emphasis: {
           get: function(){return this._emphasis || (this._emphasis = _findClassPrefix(this.$el, 'btn-'));},
-          set: function(v){this._emphasis = v; _removeClassPrefix(this.$el, 'btn-'); if (v != null) this.addClass('btn-' + v)}
+          set: function(v){
+            this._emphasis = v
+            _removeClasses(this.$el, ['btn-default', 'btn-primary', 'btn-success', 'btn-info', 'btn-warning', 'btn-danger'])
+            if (v)
+              this.addClass('btn-' + v)
+          }
+        },
+        size: {
+          get: function(){return this._size || 'md'},
+          set: function(v){
+            this._size = v
+            _removeClasses(this.$el, ['btn-lg', 'btn-sm', 'btn-md', 'btn-xs'])
+            if(v)
+              this.$el.addClass('btn-' + v)
+          }
         },
         glyph: {
           get: function(){
@@ -188,8 +245,48 @@
             }
           }
         },
+        icon: {
+          get: function(){return this._icon || null},
+          set: function(v){this._icon = v; this._remakeIcon()}
+        },
+        iconSize: {
+          get: function(){return this._iconSize || null},
+          set: function(v){this._iconSize = v; this._remakeIcon()}
+        },
+        iconRotate: {
+          get: function(){return this._iconRotate || null},
+          set: function(v){this._iconRotate = v; this._remakeIcon()}
+        },
+        iconSpin: {
+          get: function(){return this._iconSpin || null},
+          set: function(v){this._iconSpin = v; this._remakeIcon()}
+        },
+        iconInvert: {
+          get: function(){return this._iconInvert || null},
+          set: function(v){this._iconInvert = v; this._remakeIcon()}
+        },
+        iconFlip: {
+          get: function(){return this._iconFlip || null},
+          set: function(v){this._iconFlip = v; this._remakeIcon()}
+        },
+
         $glyph: {get:function(){return this.$('> .glyphicon')}}
+      },
+      methods:{
+        _remakeIcon: function(){
+          if(!this.isConstructed || !this.icon)
+            return;
+          // Remove original icon
+          var _t = this;
+          _t.$('> .fa').remove()
+          _t.$('> .fa-space').remove()
+          _t.$el.ojPrepend(function(){
+            faIcon(_t.icon, {size:_t.iconSize, rotate:_t.iconRotate, spin:_t.iconSpin, invert:_t.iconInvert, flip:_t.iconFlip})
+            span(' ', {c:'fa-space'})
+          })
+        }
       }
+
     })
     Button.Type = oj.Button
 
@@ -581,14 +678,16 @@
           var _t = this,
           innerTag = oj.a,
           typeButton = {}
+          classes = []
           if (_t.kind == 'button') {
             innerTag = bsButton
             typeButton = {type:'button'}
+            classes = ['btn btn-default']
           }
 
           this.$label.remove()
           this.$el.ojPrepend(function(){
-            innerTag(' ' + _t.label + ' ', typeButton, {c:['dropdown-toggle'], href:_t.href, 'data-toggle':'dropdown', id:_t.guid}, function(){
+            innerTag(' ' + _t.label + ' ', typeButton, {c:classes.concat(['dropdown-toggle']), href:_t.href, 'data-toggle':'dropdown', id:_t.guid}, function(){
               oj.span({c:'caret'})
             })
           })
@@ -667,6 +766,45 @@
       }
     });
 
+    var TextBox = oj.createType('TextBox', {
+      base: oj.TextBox,
+      constructor: function(){
+        return _callWith(this, TextBox.base.constructor, arguments, {}, ['form-control'])
+      }
+    });
+    TextBox.Type = oj.TextBox
+
+    var TextArea = oj.createType('TextArea', {
+      base: oj.TextArea,
+      constructor: function(){
+        return _callWith(this, TextArea.base.constructor, arguments, {}, ['form-control'])
+      }
+    });
+    TextArea.Type = oj.TextArea
+
+    var ListBox = oj.createType('ListBox', {
+      base: oj.ListBox,
+      constructor: function(){
+        return _callWith(this, ListBox.base.constructor, arguments, {}, ['form-control'])
+      }
+    });
+    ListBox.Type = oj.ListBox
+
+
+    var TypeaheadBox = oj.createType('TypeaheadBox', {
+      base: oj.TextBox,
+      constructor: function(){
+        return _callWith(this, TypeaheadBox.base.constructor, arguments, {'data-provide':'typeahead'}, [])
+      },
+      properties: {
+
+
+      },
+      methods: {
+
+      }
+    });
+
     // Enhance oj.tag with a few different concepts:
     // pull:'left', emphasis:'danger', clear:true, align:'left'
     var tagOld = oj.tag
@@ -683,9 +821,19 @@
         if(emphasis) _addClassOption(options, 'text-' + emphasis)
         if(align) _addClassOption(options, 'text-' + align)
         if(clear) _addClassOption(options, 'clearfix')
-
-      return tagOld.apply(this, [name, options].concat(rest))
+        // Replace column properties with column attributes
+        for(var option in options) {
+          // Convert options prefixed with keys in bsGridSizes
+          if(bsGridClassMap[option]) {
+            cls = bsGridClassMap[option] + '-' + options[option]
+            _addClassOption(options, cls)
+            delete options[option]
+          }
+        }
+      return tagOld.apply(this, [name, options].concat(args))
     }
+
+    bsTag.isClosed = tagOld.isClosed
 
     // Button.Type = oj.Button
 
@@ -703,6 +851,7 @@
       alertText: bsAlert,
       alertLink: bsAlertLink,
       button: bsButton,
+      buttonToolbar: bsButtonToolbar,
       buttonGroup: bsButtonGroup,
       pageHeader: bsPageHeader,
       Button: Button,
@@ -715,6 +864,17 @@
       TabDropdown: TabDropdown,
       TabContent:TabContent,
       TabPane:TabPane,
+
+      form:bsForm,
+      formInline: bsFormInline,
+      formHorizontal: bsFormHorizontal,
+      formGroup:bsFormGroup,
+      formHelp:bsFormHelp,
+      TextBox:TextBox,
+      TextArea:TextArea,
+      ListBox:ListBox,
+
+      TypeaheadBox: TypeaheadBox,
       Dropdown:Dropdown,
       DropdownButton:DropdownButton,
       Menu:Menu,
@@ -735,6 +895,8 @@
         return _callWith(this, BS.BSTable.base.constructor, arguments, {}, ['table']);
       }
     });
+
+    oj.settings.defaultThemes = ['bootstrap3']
 
     return BS;
 
